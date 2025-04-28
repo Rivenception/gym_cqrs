@@ -63,4 +63,4 @@ CREATE TABLE maintenance_logs (
 );
 
 
-#ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'B00mB00m';
+#ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'password';

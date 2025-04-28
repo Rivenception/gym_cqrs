@@ -19,7 +19,7 @@ def main():
     except Exception as e:
         print("Failed to connect to Cassandra cluster:", e)
     finally:
-        cluster.shutdown()
+        Cluster.shutdown()
 
 if __name__ == "__main__":
     main()

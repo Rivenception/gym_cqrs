@@ -9,7 +9,7 @@ cassandra_cluster = Cluster(
     ['127.0.0.1'],  # Localhost (change if your IP is different)
     port=9042  # Default Cassandra port
 )
-session = cassandra_cluster.connect('bp_monitoring')
+session = cassandra_cluster.connect('fitness_app')  # Connect to the keyspace
 # Kafka configuration (also try localhost:9092 is 9093 doesn't work)
 kafka_conf = {
     'bootstrap.servers': 'localhost:9093',

@@ -12,6 +12,7 @@ from mysql.connector import Error
 import random
 from datetime import datetime
 import time
+import creds
 
 def acked(err, msg):
     if err is not None:
@@ -21,10 +22,10 @@ def acked(err, msg):
 
 def buildConnection():
     connection = mysql.connector.connect(
-    host='127.0.0.1', # or localhost
-    database='bloodpressure',
-    user='root',
-    password='B00mB00m'
+    host= creds.db_host,
+    database= creds.db_database,
+    user= creds.db_user,
+    password= creds.db_password
     )
     return connection
 
