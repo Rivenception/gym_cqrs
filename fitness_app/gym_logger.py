@@ -3,6 +3,9 @@ from cassandra.cluster import Cluster
 from cassandra.auth import PlainTextAuthProvider
 from confluent_kafka import Consumer, KafkaError
 import json
+import random
+import time
+from datetime import datetime
 
 # Cassandra configuration
 cassandra_cluster = Cluster(
@@ -13,23 +16,29 @@ session = cassandra_cluster.connect('fitness_app')  # Connect to the keyspace
 # Kafka configuration (also try localhost:9092 is 9093 doesn't work)
 kafka_conf = {
     'bootstrap.servers': 'localhost:9093',
-    'group.id': 'bp_group',
+    'group.id': 'gym_log_consumer',
     'auto.offset.reset': 'earliest'
 }
 
 # Initialize Consumer
 consumer = Consumer(kafka_conf)
-consumer.subscribe(['bp'])
+consumer.subscribe(['gym'])
 
 def project_into_cassandra(event_data):
+
+    created_at = datetime.utcnow()
+
     """Inserts the event data into Cassandra."""
     cql = """
-    INSERT INTO bp_alerts (patient_name, timestamp, systolic)
-    VALUES (%s, %s, %s)
+    INSERT INTO gym_alerts (member_name, created_at, check_in_time, check_out_time, day_of_week, counter)
+    VALUES (%s, %s, %s, %s, %s, %s)
     """
-    session.execute(cql, (event_data['patient_name'], event_data['timestamp'],  event_data['systolic']))
+    # Execute the CQL statement with the event data
+    session.execute(cql, (event_data['member_name'], created_at, event_data['check_in_time'], event_data.get('check_out_time', None), event_data['day_of_week'], event_data['counter']))
+    print(f"DEBUG -- Inserted/Updated {event_data['member_name']}'s gym alert data.")
 
 try:
+    print("Starting Cassandra log consumer…")
     while True:
         msg = consumer.poll(timeout=1.0)
         if msg is None:
@@ -44,11 +53,15 @@ try:
 
         # Deserialize the event data
         event_data = json.loads(msg.value().decode('utf-8'))
+
+        if 'member_id' not in event_data:
+            print("Skipping event without member_id:", event_data)
+            continue
         
         # Insert into Cassandra
-        if event_data['systolic'] > 160:
+        if event_data['counter'] > 10:
             project_into_cassandra(event_data)
-            print(f"DEBUG -- DB Alert Projection Service: Inserted event for patient {event_data['patient_name']} into Cassandra... High Blood Pressure Detected!!")
+            print(f"DEBUG -- DB Alert Projection Service: Inserted event for member {event_data['member_name']} into Cassandra... Gym approaching maximum capacity..")
 except KeyboardInterrupt:
     pass
 finally:

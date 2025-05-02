@@ -12,3 +12,9 @@ CSC 545 final project
         - bd_database = 'your database'
         - db_user = 'root' or 'your user_id"
         - db_password = 'your password'
+
+# To access cqlsh
+- open cmd
+- type in docker ps to pull the list of docker containers
+- type in docker exec -it "cassandra container name" cqlsh
+- USE fitness_app; to access the tables
